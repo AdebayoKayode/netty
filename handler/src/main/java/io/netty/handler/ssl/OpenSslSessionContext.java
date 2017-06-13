@@ -76,8 +76,10 @@ public abstract class OpenSslSessionContext implements SSLSessionContext {
             a += SessionTicketKey.AES_KEY_SIZE;
             tickets[i] = new SessionTicketKey(name, hmacKey, aesKey);
         }
-        SSLContext.clearOptions(context.ctx, SSL.SSL_OP_NO_TICKET);
-        SSLContext.setSessionTicketKeys(context.ctx, tickets);
+        synchronized (context) {
+            SSLContext.clearOptions(context.ctx, SSL.SSL_OP_NO_TICKET);
+            SSLContext.setSessionTicketKeys(context.ctx, tickets);
+        }
     }
 
     /**
@@ -85,12 +87,14 @@ public abstract class OpenSslSessionContext implements SSLSessionContext {
      */
     public void setTicketKeys(OpenSslSessionTicketKey... keys) {
         ObjectUtil.checkNotNull(keys, "keys");
-        SSLContext.clearOptions(context.ctx, SSL.SSL_OP_NO_TICKET);
         SessionTicketKey[] ticketKeys = new SessionTicketKey[keys.length];
         for (int i = 0; i < ticketKeys.length; i++) {
             ticketKeys[i] = keys[i].key;
         }
-        SSLContext.setSessionTicketKeys(context.ctx, ticketKeys);
+        synchronized (context) {
+            SSLContext.clearOptions(context.ctx, SSL.SSL_OP_NO_TICKET);
+            SSLContext.setSessionTicketKeys(context.ctx, ticketKeys);
+        }
     }
 
     /**
